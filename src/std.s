@@ -34,6 +34,9 @@
 
 ptr:        .res 2
 
+seed: .res 1
+randtmp: .res 1
+
 .segment "TEXT"
 
 .proc STRLEN
@@ -104,3 +107,17 @@ ptr:        .res 2
 
         RTS
 .endproc
+
+.proc RAND
+        STX randtmp
+        LDX seed
+        LDA RAND_DATA, X
+        INX
+        STX seed
+        LDX randtmp
+
+        RTS
+.endproc
+
+RAND_DATA:
+    .incbin "rand.bin"

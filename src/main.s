@@ -32,15 +32,9 @@
 
 .segment "ZEROPAGE"
 
-sprite_rotation: .res 1
-seed: .res 1
-randtmp: .res 1
-
 countdown: .res 1
 
 .segment "BSS"
-
-sprites: .res $100
 
 .segment "TEXT"
 
@@ -48,37 +42,6 @@ sprites: .res $100
 .include "std.inc"
 .include "nes.inc"
 .include "ppu.inc"
-
-.proc RAND
-        STX randtmp
-        LDX seed
-        LDA RAND_DATA, X
-        INX
-        STX seed
-        LDX randtmp
-
-        RTS
-.endproc
-
-.proc UPDATE_SPRITES
-        LDX sprite_rotation
-        LDY #$00
-
-    LOOP:
-        LDA sprites, X
-        STA $0200, Y
-        INX
-        INY
-        BNE LOOP
-
-        ; Rotate the sprite data by 8 sprites next time
-        LDA sprite_rotation
-        CLC
-        ADC #4
-        STA sprite_rotation
-
-        RTS
-.endproc
 
 .proc INIT_SPRITES
         LDX #$00
@@ -220,6 +183,3 @@ TITLE_NAM:
 
 TILES:
     .incbin "data/chr.chr.rle"
-
-RAND_DATA:
-    .incbin "rand.bin"

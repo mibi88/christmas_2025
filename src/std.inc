@@ -48,4 +48,14 @@ std_inc = 0
 ; A pointer used by various subroutines.
 .globalzp ptr
 
+; The PRNG seed.
+.globalzp seed
+
+; Generate a random number from an 8-bit seed. It leaves X and Y intact.
+;
+; Currently it uses a 256 byte buffer of random numbers.
+;
+; Return value in A.
+.global RAND
+
 .endif

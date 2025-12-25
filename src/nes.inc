@@ -61,4 +61,13 @@ gfx_inc = 0
 ; The controller 2 input read by READ_CTRL2
 .globalzp ctrl2
 
+; The sprite data.
+.global sprites
+
+; Loads the sprite data to $0200, from where it is then sent to the PPU.
+;
+; Clobbers A, X and Y.
+.global UPDATE_SPRITES
+
+
 .endif

@@ -41,6 +41,15 @@ tmp_y:      .res 1
 ctrl1:      .res 1
 ctrl2:      .res 1
 
+sprite_rotation: .res 1
+
+.segment "BSS"
+
+; A page containing the sprites that is then copied to $0200, rotated by
+; sprite_rotation to make sprites flicker when there are more than 8 sprites
+; on a scanline.
+sprites: .res $100
+
 .segment "TEXT"
 
 CTRL1 = $4016
@@ -156,5 +165,25 @@ CTRL2 = $4017
         BNE LOAD_LOOP_SKIP_LOAD
 
     END:
+        RTS
+.endproc
+
+.proc UPDATE_SPRITES
+        LDX sprite_rotation
+        LDY #$00
+
+    LOOP:
+        LDA sprites, X
+        STA $0200, Y
+        INX
+        INY
+        BNE LOOP
+
+        ; Rotate the sprite data by 8 sprites next time
+        LDA sprite_rotation
+        CLC
+        ADC #4
+        STA sprite_rotation
+
         RTS
 .endproc
