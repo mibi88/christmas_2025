@@ -3,4 +3,6 @@ data
 *.dbg
 *.nes
 
-utils/rle
+utils/rle/rle
+utils/tilemap_mask/tilemap_mask
+utils/tile_usage/tile_usage

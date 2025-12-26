@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Mushroom farming simulation game.
+# Small demo for christmas 2025.
 #
 # by Mibi88
 #
@@ -35,65 +35,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 builddir=build
-datadir=data
 
-name=christmas.nes
-dbgfile=christmas.dbg
-
+name=tile_usage
 srcdir=src
-assetdir=assets
 
 rootdir=$(dirname $0)
 orgdir=$(pwd)
 echo "-- Entering $rootdir..."
 cd $rootdir
 
-echo "-- Building the tools..."
-utils/rle/build.sh
-utils/tilemap_mask/build.sh
-utils/tile_usage/build.sh
-if [ $? -ne 0 ]; then
-    echo "-- Build failed with exit code $?!"
-    echo "-- Exiting $rootdir..."
-    cd $orgdir
-    exit $?
-fi
-
 mkdir -p $builddir
-mkdir -p $datadir
-
-echo "-- Converting the nametables..."
-for i in $(find $assetdir -mindepth 1 -type f -name "*.nam"); do
-    nam=$datadir/${i#$assetdir*}.rle
-    echo "-- Converting ${i} to ${nam}..."
-    mkdir -p $(dirname $nam)
-    utils/rle/rle $i $nam
-    if [ $? -ne 0 ]; then
-        echo "-- Build failed with exit code $?!"
-        echo "-- Exiting $rootdir..."
-        cd $orgdir
-        exit $?
-    fi
-
-    echo "-- Generating a mask of the tilemap..."
-    utils/tilemap_mask/tilemap_mask $i $datadir/${i#$assetdir*}.bin
-done
-
-echo "-- Converting the tiles..."
-utils/rle/rle src/chr.chr $datadir/chr.chr.rle
-
-echo "-- Calculating the usage of each tile..."
-utils/tile_usage/tile_usage src/chr.chr $datadir/chr.chr.bin
-
-echo "-- Assembling the source files..."
 
 objfiles=()
 
-for i in $(find $srcdir -mindepth 1 -type f -name "*.s"); do
-    obj=$builddir/${i#$srcdir*}.obj
-    echo "-- Assembling ${i} to ${obj}..."
+for i in $(find $srcdir -mindepth 1 -type f -name "*.c"); do
+    obj=$builddir/${i#$srcdir*}.o
+    echo "-- Compiling ${i} to ${obj}..."
     mkdir -p $(dirname $obj)
-    ca65 $i -o $obj -W 1 -g
+    cc -c $i -o $obj -ansi -Isrc
     if [ $? -ne 0 ]; then
         echo "-- Build failed with exit code $?!"
         echo "-- Exiting $rootdir..."
@@ -105,7 +64,7 @@ done
 
 # Linking
 echo "-- Linking $name..."
-ld65 ${objfiles[@]} -o $name -C nrom.cfg --dbgfile $dbgfile
+cc ${objfiles[@]} -o $name
 
 if [ $? -ne 0 ]; then
     echo "-- Build failed with exit code $?!"

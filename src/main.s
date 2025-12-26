@@ -34,7 +34,18 @@
 
 countdown: .res 1
 
+coarse_x: .res 1
+fine_x: .res 1
+
+coarse_y: .res 1
+fine_y: .res 1
+tmp_x: .res 1
+
 .segment "BSS"
+
+tile_usage: .res 64
+map_usage: .res 32*30/8
+update_queue: .res 64*3
 
 .segment "TEXT"
 
@@ -42,6 +53,20 @@ countdown: .res 1
 .include "std.inc"
 .include "nes.inc"
 .include "ppu.inc"
+
+.proc LOAD_MAP_USAGE
+        LDX #$00
+
+    LOOP:
+        LDA NAM_MASK, X
+        STA map_usage, X
+
+        INX
+        CPX 32*30/8
+        BNE LOOP
+
+        RTS
+.endproc
 
 .proc INIT_SPRITES
         LDX #$00
@@ -106,6 +131,70 @@ countdown: .res 1
         RTS
 .endproc
 
+.proc SPRITE_COLLISION
+        LDX #$00
+
+    LOOP:
+        LDA sprites, X
+        STA fine_y
+        AND #3^$FF
+
+        ; Leave fine Y bits away and divide.
+        LSR
+
+        ; Coarse Y is already divided by 8 and multiplied back by 4 to get the
+        ; tile position.
+        STA coarse_y
+
+        LDA sprites+3, X
+        STA fine_x
+
+        LSR
+        LSR
+        LSR
+        LSR
+        LSR
+        LSR
+
+        ; Coarse X is in A.
+        CLC
+        ADC coarse_y
+
+        ; The index of the byte to read from the mask is in coarse_x.
+        STA coarse_x
+
+        LDA fine_x
+        AND #$03
+        STA fine_x
+        STX tmp_x
+
+        LDY coarse_x
+
+        LDA map_usage, Y
+        LDX fine_x
+    SHIFT_LOOP:
+        LSR
+        DEX
+        BNE SHIFT_LOOP
+        AND #$01
+        BEQ EMPTY
+
+        ; TODO: Add the pixel to the tile before resetting the position.
+        LDA #$00
+        STA sprites, X
+        JSR RAND
+        STA sprites+3, X
+
+    EMPTY:
+        LDA tmp_x
+        CLC
+        ADC #$04
+        TAX
+        BNE LOOP
+
+        RTS
+.endproc
+
 .proc MAIN
         LDA #$80
         STA $2000
@@ -144,6 +233,7 @@ countdown: .res 1
         STA ppu_ctrl
 
         JSR INIT_SPRITES
+        JSR LOAD_MAP_USAGE
 
     LOOP:
         LDA nmi
@@ -163,6 +253,7 @@ countdown: .res 1
     UPDATE:
         STX countdown
         JSR UPDATE_SPRITES
+        JSR SPRITE_COLLISION
 
         JMP LOOP
 .endproc
@@ -183,3 +274,9 @@ TITLE_NAM:
 
 TILES:
     .incbin "data/chr.chr.rle"
+
+NAM_MASK:
+    .incbin "data/title.nam.bin"
+
+TILE_USAGE:
+    .incbin "data/chr.chr.bin"
