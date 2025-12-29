@@ -43,7 +43,7 @@ tmp_x: .res 1
 
 .segment "BSS"
 
-tile_usage: .res 64
+tile_usage: .res 256
 map_usage: .res 32*30/8
 update_queue: .res 64*3
 
@@ -136,6 +136,8 @@ update_queue: .res 64*3
 
     LOOP:
         LDA sprites, X
+        CMP #240
+        BCS COLLISION
         STA fine_y
         AND #7^$FF
 
@@ -187,6 +189,7 @@ update_queue: .res 64*3
 
         ; TODO: Add the pixel to the tile before resetting the position.
         LDX tmp_x
+    COLLISION:
         LDA #$00
         STA sprites, X
         JSR RAND
@@ -224,7 +227,7 @@ update_queue: .res 64*3
 
         LDX #>TITLE_NAM
         LDA #<TITLE_NAM
-        JSR LOAD_RLE_NAM
+        JSR LOAD_RLE
 
         LDX #$00
         LDA #$00
@@ -232,7 +235,7 @@ update_queue: .res 64*3
 
         LDX #>TILES
         LDA #<TILES
-        JSR LOAD_RLE_NAM
+        JSR LOAD_RLE
 
         LDA #%00011110
         STA ppu_mask

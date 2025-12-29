@@ -54,7 +54,7 @@ gfx_inc = 0
 ; Load a RLE compressed nametable, which is zero terminated.
 ;
 ; Clobbers A, X, Y
-.global LOAD_RLE_NAM
+.global LOAD_RLE
 
 ; The controller 1 input read by READ_CTRL1
 .globalzp ctrl1

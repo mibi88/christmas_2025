@@ -119,7 +119,7 @@ CTRL2 = $4017
         RTS
 .endproc
 
-.proc LOAD_RLE_NAM
+.proc LOAD_RLE
         STA ptr
         STX ptr+1
 
