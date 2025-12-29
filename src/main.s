@@ -137,7 +137,7 @@ update_queue: .res 64*3
     LOOP:
         LDA sprites, X
         STA fine_y
-        AND #3^$FF
+        AND #7^$FF
 
         ; Leave fine Y bits away and divide.
         LSR
@@ -147,14 +147,17 @@ update_queue: .res 64*3
         STA coarse_y
 
         LDA sprites+3, X
+
+        LSR
+        LSR
+        LSR
+        ; A now contains the tile number.
         STA fine_x
 
         LSR
         LSR
         LSR
-        LSR
-        LSR
-        LSR
+        ; A now contains the byte number in the mask
 
         ; Coarse X is in A.
         CLC
@@ -164,7 +167,7 @@ update_queue: .res 64*3
         STA coarse_x
 
         LDA fine_x
-        AND #$03
+        AND #$07
         STA fine_x
         STX tmp_x
 
@@ -172,14 +175,18 @@ update_queue: .res 64*3
 
         LDA map_usage, Y
         LDX fine_x
+        BEQ SHIFT_END
     SHIFT_LOOP:
         LSR
         DEX
         BNE SHIFT_LOOP
+
+    SHIFT_END:
         AND #$01
         BEQ EMPTY
 
         ; TODO: Add the pixel to the tile before resetting the position.
+        LDX tmp_x
         LDA #$00
         STA sprites, X
         JSR RAND
