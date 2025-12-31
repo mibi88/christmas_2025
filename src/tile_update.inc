@@ -39,9 +39,14 @@ UPDATE_STACK_SZ = 4
 
 .globalzp   spr_stack_idx
 
-.global     sprite_tile_x
-.global     sprite_tile_y
+.global     sprite_tile_hi
+.global     sprite_tile_lo
+.global     sprite_tgt_hi
+.global     sprite_tgt_lo
 .global     sprite_fine_x
 .global     sprite_fine_y
+.global     sprite_idx
+
+.global     UPDATE_TILES
 
 .endif

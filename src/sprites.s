@@ -44,6 +44,11 @@ coarse_y:       .res 1
 fine_y:         .res 1
 tmp_x:          .res 1
 
+tile_x:         .res 1
+tile_y:         .res 1
+
+tmp:            .res 1
+
 .segment "TEXT"
 
 .proc INIT_SPRITES
@@ -60,6 +65,10 @@ tmp_x:          .res 1
         ADC #$04
         TAX
         BNE LOOP
+
+    INIT_STACK:
+        LDA #UPDATE_STACK_SZ
+        STA spr_stack_idx
 
         RTS
 .endproc
@@ -109,16 +118,27 @@ tmp_x:          .res 1
         RTS
 .endproc
 
+RETURN:
+    RTS
+
 .proc SPRITE_COLLISION
-        LDA #UPDATE_STACK_SZ
-        STA spr_stack_idx
         LDX #$00
 
     LOOP:
+        LDY spr_stack_idx
+        BEQ RETURN ; The stack is full
+
+        ; I'm writing 4 to the sprite flags to mark them as being processed, as
+        ; the third bit is unused.
+        LDA sprites+2, X
+        BEQ OK
+        STX tmp_x
+        JMP ALREADY_ON_STACK
+    OK:
+
         LDA sprites, X
         CMP #240
         BCS COLLISION
-        STA fine_y
         AND #7^$FF
 
         ; Leave fine Y bits away and divide.
@@ -134,7 +154,7 @@ tmp_x:          .res 1
         LSR
         LSR
         ; A now contains the tile number.
-        STA fine_x
+        STA tile_x
 
         LSR
         LSR
@@ -148,7 +168,7 @@ tmp_x:          .res 1
         ; The index of the byte to read from the mask is in coarse_x.
         STA coarse_x
 
-        LDA fine_x
+        LDA tile_x
         AND #$07
         STA fine_x
         STX tmp_x
@@ -170,17 +190,82 @@ tmp_x:          .res 1
         ; TODO: Add the pixel to the tile before resetting the position.
         LDX tmp_x
     COLLISION:
+        STX tmp_x
+
+        LDA #$04
+        STA sprites+2, X
+
+        LDY spr_stack_idx
+        ; Add it to the list of sprites to update.
+        DEY
+        STY spr_stack_idx
+
+        TXA
+        STA sprite_idx, Y
+
+        LDA sprites, X
+        SEC
+        SBC #$01
+        STA fine_y
+        AND #$07
+        STA sprite_fine_y, Y
+
         LDA #$00
-        STA sprites, X
-        JSR RAND
-        STA sprites+3, X
+        STA tmp
+        LDA sprites, X
+        AND #$07^$FF
+        ASL
+        ROL tmp
+        ASL
+        ROL tmp
+        CLC
+        ADC tile_x
+        STA sprite_tile_lo, Y
+        LDA tmp
+        ADC #$20 ; The background is in the nametable at $2000.
+        STA sprite_tile_hi, Y
+
+        LDA #$00
+        STA tmp
+        LDA fine_y
+        AND #$07^$FF
+        ASL
+        ROL tmp
+        ASL
+        ROL tmp
+        CLC
+        ADC tile_x
+        STA sprite_tgt_lo, Y
+        LDA tmp
+        ADC #$20 ; The background is in the nametable at $2000.
+        STA sprite_tgt_hi, Y
+
+        LDA sprites+3, X
+        AND #$07
+        TAX
+        LDA #$01
+        CPX #$00
+        BEQ NO_SHIFT
+
+    FINE_X_SHIFT_LOOP:
+        ASL
+
+        DEX
+        BNE FINE_X_SHIFT_LOOP
+
+    NO_SHIFT:
+        STA sprite_fine_x, Y
+
+    ALREADY_ON_STACK:
 
     EMPTY:
         LDA tmp_x
         CLC
         ADC #$04
         TAX
-        BNE LOOP
+        BEQ END
+        JMP LOOP
 
+    END:
         RTS
 .endproc

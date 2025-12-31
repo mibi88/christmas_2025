@@ -32,6 +32,7 @@
 
 .include "ppu.inc"
 .include "nmi.inc"
+.include "tile_update.inc"
 
 .segment "ZEROPAGE"
 
@@ -166,11 +167,14 @@ pal_buffer:     .res $20
 
         LDA #$00
         STA nam_cur
+        BEQ END ; Branch always taken.
 
         ; Do not edit tiles if nametable data was already loaded, as it may
         ; take too many cycles.
     NAM_LOAD_SKIP:
+        JSR UPDATE_TILES
 
+    END:
         ; Write to PPUCTRL and PPUMASK
 
         LDA ppu_ctrl

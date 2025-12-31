@@ -30,10 +30,16 @@
 
 .include "map_data.inc"
 
+.segment "ZEROPAGE"
+
+empty_tiles:    .res 1
+
 .segment "BSS"
 
 tile_usage:     .res 256
 map_usage:      .res 32*30/8
+
+empty_tile_idx: .res TILE_STACK_SZ
 
 .segment "TEXT"
 

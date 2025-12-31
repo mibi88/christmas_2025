@@ -29,12 +29,17 @@
 ; POSSIBILITY OF SUCH DAMAGE.
 
 .ifndef map_data_inc
-map_data_inc = 0
+map_data_inc    = 0
 
-.global LOAD_MAP_USAGE
-.global LOAD_TILE_USAGE
+TILE_STACK_SZ   = 4
 
-.global tile_usage
-.global map_usage
+.global         LOAD_MAP_USAGE
+.global         LOAD_TILE_USAGE
+
+.global         tile_usage
+.global         map_usage
+
+.globalzp       empty_tiles
+.global         empty_tile_idx
 
 .endif
