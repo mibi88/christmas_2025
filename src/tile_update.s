@@ -38,6 +38,8 @@
 
 spr_stack_idx:  .res 1
 
+tile_idx:       .res 1
+
 tmp:            .res 1
 tmp2:           .res 1
 
@@ -67,20 +69,28 @@ RETURN:
         LDA sprite_tile_lo, X
         STA PPUADDR
 
-        LDA PPUDATA
-        LDA PPUDATA
-        STA tmp
-
-        ASL tmp
-        ROL
-        ASL tmp
-        ROL
-        ASL tmp
-        ROL
-        ASL tmp
-        ROL
+        LDA #$00
         STA tmp2
 
+        LDA PPUDATA
+        LDA PPUDATA
+
+        ASL
+        ROL tmp2
+        ASL
+        ROL tmp2
+        ASL
+        ROL tmp2
+        ASL
+        ROL tmp2
+        SEC
+        ADC sprite_fine_y, X
+        STA tmp
+        LDA tmp2
+        ADC #$00
+        STA tmp2
+
+        LDA tmp2
         STA PPUADDR
         LDA tmp
         STA PPUADDR
@@ -108,6 +118,37 @@ RETURN:
 
     COLLISION:
 
+        LDA sprite_tgt_hi, X
+        STA PPUADDR
+        LDA sprite_tgt_lo, X
+        STA PPUADDR
+
+        LDY PPUDATA
+        LDY PPUDATA
+        STY tile_idx
+
+        LDA TILE_USAGE, Y
+        BNE ALLOC
+        LDA tile_usage, Y
+        CPY #64
+        BCC NO_ALLOC
+
+    ALLOC:
+
+        LDY empty_tiles
+        CPY #TILE_STACK_SZ
+        BCS CONTINUE
+
+        LDA empty_tile_idx
+
+        JMP SET_PIXEL
+
+    NO_ALLOC:
+
+        
+
+    SET_PIXEL:
+
     RESET_POS:
         LDY sprite_idx
         LDA #$00
@@ -116,6 +157,8 @@ RETURN:
         STA sprites+3, Y
 
     NO_COLLISION:
+
+    CONTINUE:
         ; Mark it as not being on the stack anymore.
         LDY sprite_idx, X
         LDA #$00
@@ -125,7 +168,9 @@ RETURN:
 
         INX
         CPX #UPDATE_STACK_SZ
-        BNE LOOP
+        BEQ BREAK
+        JMP LOOP
 
+    BREAK:
         RTS
 .endproc

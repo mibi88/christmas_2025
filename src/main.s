@@ -99,13 +99,16 @@ countdown:      .res 1
 
         JSR MOVE_SPRITES
         LDX #$00
+        JMP UPDATE
 
     SKIP:
         INX
     UPDATE:
         STX countdown
         JSR UPDATE_SPRITES
-        JSR SPRITE_COLLISION
+        ;JSR SPRITE_COLLISION
+
+        JSR FIND_EMPTY
 
         JMP LOOP
 .endproc

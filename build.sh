@@ -34,6 +34,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+if [ $# -lt 1 ]; then
+    echo "USAGE: $0 [NAMETABLE]"
+    exit 1
+fi
+
 builddir=build
 datadir=data
 
@@ -62,22 +67,23 @@ fi
 mkdir -p $builddir
 mkdir -p $datadir
 
-echo "-- Converting the nametables..."
-for i in $(find $assetdir -mindepth 1 -type f -name "*.nam"); do
-    nam=$datadir/${i#$assetdir*}.rle
-    echo "-- Converting ${i} to ${nam}..."
-    mkdir -p $(dirname $nam)
-    utils/rle/rle $i $nam
-    if [ $? -ne 0 ]; then
-        echo "-- Build failed with exit code $?!"
-        echo "-- Exiting $rootdir..."
-        cd $orgdir
-        exit $?
-    fi
+echo "-- Converting the nametable..."
 
-    echo "-- Generating a mask of the tilemap..."
-    utils/tilemap_mask/tilemap_mask $i $datadir/${i#$assetdir*}.bin
-done
+i=$1
+
+nam=$datadir/title.nam.rle
+echo "-- Converting ${i} to ${nam}..."
+mkdir -p $(dirname $nam)
+utils/rle/rle $i $nam
+if [ $? -ne 0 ]; then
+    echo "-- Build failed with exit code $?!"
+    echo "-- Exiting $rootdir..."
+    cd $orgdir
+    exit $?
+fi
+
+echo "-- Generating a mask of the tilemap..."
+utils/tilemap_mask/tilemap_mask $i $datadir/title.nam.bin
 
 echo "-- Converting the tiles..."
 utils/rle/rle src/chr.chr $datadir/chr.chr.rle

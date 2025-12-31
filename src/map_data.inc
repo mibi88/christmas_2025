@@ -33,13 +33,19 @@ map_data_inc    = 0
 
 TILE_STACK_SZ   = 4
 
+FULL_TILE       = $18
+
 .global         LOAD_MAP_USAGE
 .global         LOAD_TILE_USAGE
+
+.global         FIND_EMPTY
 
 .global         tile_usage
 .global         map_usage
 
 .globalzp       empty_tiles
 .global         empty_tile_idx
+
+.global         TILE_USAGE
 
 .endif

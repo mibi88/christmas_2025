@@ -70,6 +70,32 @@ empty_tile_idx: .res TILE_STACK_SZ
         RTS
 .endproc
 
+.proc FIND_EMPTY
+        ; NOTE: The first tile is skipped, as it is used in the original
+        ; nametable data for empty tiles.
+
+        LDA empty_tiles
+        BEQ STACK_FULL
+        LDX #63
+
+    LOOP:
+        LDA tile_usage, X
+        BNE SKIP
+
+        LDY empty_tiles
+        DEY
+        TXA
+        STA empty_tile_idx+1, Y
+        STY empty_tiles
+
+    SKIP:
+        DEX
+        BNE LOOP
+
+    STACK_FULL:
+        RTS
+.endproc
+
 NAM_MASK:
     .incbin "data/title.nam.bin"
 
