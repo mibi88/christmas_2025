@@ -167,6 +167,8 @@ pal_buffer:     .res $20
         LDA #$00
         STA nam_cur
 
+        ; Do not edit tiles if nametable data was already loaded, as it may
+        ; take too many cycles.
     NAM_LOAD_SKIP:
 
         ; Write to PPUCTRL and PPUMASK

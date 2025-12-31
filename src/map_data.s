@@ -28,101 +28,46 @@
 ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ; POSSIBILITY OF SUCH DAMAGE.
 
-.export MAIN
-
-.segment "ZEROPAGE"
-
-countdown:      .res 1
+.include "map_data.inc"
 
 .segment "BSS"
 
+tile_usage:     .res 256
+map_usage:      .res 32*30/8
+
 .segment "TEXT"
 
-.include "nmi.inc"
-.include "std.inc"
-.include "nes.inc"
-.include "ppu.inc"
-.include "tile_update.inc"
-.include "sprites.inc"
-.include "map_data.inc"
-
-.proc MAIN
-        LDA #$80
-        STA $2000
-
-        JSR PPU_INIT
-
-        LDA #%10000000
-        STA ppu_ctrl
-        STA PPUCTRL
-        LDA #%00000000
-        STA ppu_mask
-
-        LDX #>PALETTE
-        LDA #<PALETTE
-        JSR LOAD_PALETTE
-
-        LDX #$20
-        LDA #$00
-        JSR SET_PPU_ADDR
-
-        LDX #>TITLE_NAM
-        LDA #<TITLE_NAM
-        JSR LOAD_RLE
-
+.proc LOAD_MAP_USAGE
         LDX #$00
-        LDA #$00
-        JSR SET_PPU_ADDR
-
-        LDX #>TILES
-        LDA #<TILES
-        JSR LOAD_RLE
-
-        LDA #%00011110
-        STA ppu_mask
-        LDA #%10001000
-        STA ppu_ctrl
-
-        JSR INIT_SPRITES
-        JSR LOAD_MAP_USAGE
-        JSR LOAD_TILE_USAGE
 
     LOOP:
-        LDA nmi
-        BEQ LOOP
-        LDA #$00
-        STA nmi
+        LDA NAM_MASK, X
+        STA map_usage, X
 
-        LDX countdown
-        CPX #$08
-        BNE SKIP
-
-        JSR MOVE_SPRITES
-        LDX #$00
-
-    SKIP:
         INX
-    UPDATE:
-        STX countdown
-        JSR UPDATE_SPRITES
-        JSR SPRITE_COLLISION
+        CPX 32*30/8
+        BNE LOOP
 
-        JMP LOOP
+        RTS
 .endproc
 
-PALETTE:
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
+.proc LOAD_TILE_USAGE
+        LDX #$FF
 
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
+    LOOP:
+        LDA TILE_USAGE, X
+        STA tile_usage, X
 
-TITLE_NAM:
-    .incbin "data/title.nam.rle"
+        DEX
+        BNE LOOP
 
-TILES:
-    .incbin "data/chr.chr.rle"
+        RTS
+.endproc
+
+NAM_MASK:
+    .incbin "data/title.nam.bin"
+
+TILE_USAGE:
+    ; Load only the data for the first page, as (obviously) only the first page
+    ; is used in the nametable, and we don't need this data for the sprites.
+    .incbin "data/chr.chr.bin", 0, $100

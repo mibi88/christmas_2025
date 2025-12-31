@@ -28,101 +28,23 @@
 ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ; POSSIBILITY OF SUCH DAMAGE.
 
-.export MAIN
+.include "tile_update.inc"
 
 .segment "ZEROPAGE"
 
-countdown:      .res 1
+spr_stack_idx:  .res 1
 
 .segment "BSS"
 
+sprite_tile_x:  .res UPDATE_STACK_SZ
+sprite_tile_y:  .res UPDATE_STACK_SZ
+sprite_fine_x:  .res UPDATE_STACK_SZ
+sprite_fine_y:  .res UPDATE_STACK_SZ
+
 .segment "TEXT"
 
-.include "nmi.inc"
-.include "std.inc"
-.include "nes.inc"
-.include "ppu.inc"
-.include "tile_update.inc"
-.include "sprites.inc"
-.include "map_data.inc"
+.proc UPDATE_TILES
+        
 
-.proc MAIN
-        LDA #$80
-        STA $2000
-
-        JSR PPU_INIT
-
-        LDA #%10000000
-        STA ppu_ctrl
-        STA PPUCTRL
-        LDA #%00000000
-        STA ppu_mask
-
-        LDX #>PALETTE
-        LDA #<PALETTE
-        JSR LOAD_PALETTE
-
-        LDX #$20
-        LDA #$00
-        JSR SET_PPU_ADDR
-
-        LDX #>TITLE_NAM
-        LDA #<TITLE_NAM
-        JSR LOAD_RLE
-
-        LDX #$00
-        LDA #$00
-        JSR SET_PPU_ADDR
-
-        LDX #>TILES
-        LDA #<TILES
-        JSR LOAD_RLE
-
-        LDA #%00011110
-        STA ppu_mask
-        LDA #%10001000
-        STA ppu_ctrl
-
-        JSR INIT_SPRITES
-        JSR LOAD_MAP_USAGE
-        JSR LOAD_TILE_USAGE
-
-    LOOP:
-        LDA nmi
-        BEQ LOOP
-        LDA #$00
-        STA nmi
-
-        LDX countdown
-        CPX #$08
-        BNE SKIP
-
-        JSR MOVE_SPRITES
-        LDX #$00
-
-    SKIP:
-        INX
-    UPDATE:
-        STX countdown
-        JSR UPDATE_SPRITES
-        JSR SPRITE_COLLISION
-
-        JMP LOOP
+        RTS
 .endproc
-
-PALETTE:
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-    .byte $03, $30, $16, $36
-
-TITLE_NAM:
-    .incbin "data/title.nam.rle"
-
-TILES:
-    .incbin "data/chr.chr.rle"
