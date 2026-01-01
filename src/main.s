@@ -106,7 +106,7 @@ countdown:      .res 1
     UPDATE:
         STX countdown
         JSR UPDATE_SPRITES
-        ;JSR SPRITE_COLLISION
+        JSR SPRITE_COLLISION
 
         JSR FIND_EMPTY
 

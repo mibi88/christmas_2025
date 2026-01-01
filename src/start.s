@@ -40,7 +40,7 @@
 .byte %00000000 ; mapper + mirorring
 .byte $00
 .byte $00
-.byte %00000000 ; TV system
+.byte %00000001 ; TV system: PAL
 .byte %00110001 ; Bus conflicts, no PRG ram, compatible with both PAL and NTSC
 .byte $07 ; CHR-RAM shift count in the lower nibble, i.e.,
           ; 64<<shift_count bytes.

@@ -67,6 +67,10 @@ empty_tile_idx: .res TILE_STACK_SZ
         DEX
         BNE LOOP
 
+        ; Initialize empty_tiles.
+        LDA #TILE_STACK_SZ
+        STA empty_tiles
+
         RTS
 .endproc
 
