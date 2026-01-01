@@ -171,7 +171,6 @@ RETURN:
         LDA tile_x
         AND #$07
         STA fine_x
-        STX tmp_x
 
         LDY coarse_x
 
@@ -190,7 +189,6 @@ RETURN:
         ; TODO: Add the pixel to the tile before resetting the position.
         LDX tmp_x
     COLLISION:
-        STX tmp_x
 
         LDA #$04
         STA sprites+2, X
@@ -262,6 +260,7 @@ RETURN:
         LDA tmp_x
         CLC
         ADC #$04
+        STA tmp_x
         TAX
         BEQ END
         JMP LOOP

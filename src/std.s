@@ -32,10 +32,10 @@
 
 .segment "ZEROPAGE"
 
-ptr:        .res 2
+ptr:            .res 2
 
-seed: .res 1
-randtmp: .res 1
+seed:           .res 1
+randtmp:        .res 1
 
 .segment "TEXT"
 

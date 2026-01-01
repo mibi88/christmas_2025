@@ -35,13 +35,13 @@
 
 .segment "ZEROPAGE"
 
-max:        .res 1
-tmp_y:      .res 1
+max:            .res 1
+tmp_y:          .res 1
 
-ctrl1:      .res 1
-ctrl2:      .res 1
+ctrl1:          .res 1
+ctrl2:          .res 1
 
-sprite_rotation: .res 1
+sprite_rot:     .res 1
 
 .segment "BSS"
 
@@ -169,7 +169,7 @@ CTRL2 = $4017
 .endproc
 
 .proc UPDATE_SPRITES
-        LDX sprite_rotation
+        LDX sprite_rot
         LDY #$00
 
     LOOP:
@@ -180,10 +180,10 @@ CTRL2 = $4017
         BNE LOOP
 
         ; Rotate the sprite data by 8 sprites next time
-        LDA sprite_rotation
+        LDA sprite_rot
         CLC
         ADC #4
-        STA sprite_rotation
+        STA sprite_rot
 
         RTS
 .endproc
